@@ -94,7 +94,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173"));
+        // **CORRECCIÓN:** AÑADIR LAS URLS DE PRODUCCIÓN DE RENDER
+    configuration.setAllowedOrigins(Arrays.asList(
+        "http://localhost:3000", // Desarrollo
+        "http://localhost:5173", // Desarrollo
+        "https://elfronted.onrender.com" // 🚀 URL PÚBLICA DE TU FRONTEND
+    ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

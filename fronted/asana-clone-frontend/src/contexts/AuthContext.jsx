@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 // 🛑 CORRECCIÓN: Se mantiene la carpeta 'services' (plural) y se asume que el archivo del servicio usa la convención de capitalización: 'AuthService'.
-import authService from '../services/AuthService'; 
+import authService from '../services/authService'; 
 import toast from 'react-hot-toast';
 
 // 🛑 CORRECCIÓN: Solo declaramos el contexto una vez.

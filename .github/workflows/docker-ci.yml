@@ -1,0 +1,42 @@
+name: CI - Validar Dockerfile y Build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  validate-dockerfile:
+    name: Lint y Build Dockerfile
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ------------------------------
+      # Paso 1: Lint del Dockerfile
+      # ------------------------------
+      - name: Instalar Hadolint (Linter para Dockerfile)
+        run: |
+          sudo wget -O /usr/local/bin/hadolint \
+            https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64
+          sudo chmod +x /usr/local/bin/hadolint
+
+      - name: Ejecutar Hadolint
+        run: hadolint Dockerfile
+
+      # ------------------------------
+      # Paso 2: Construir la imagen
+      # ------------------------------
+      - name: Construir imagen Docker
+        run: docker build -t test-spring-app .
+
+      # ------------------------------
+      # Paso 3: Ejecutar la app (test rápido)
+      # ------------------------------
+      - name: Test de inicio
+        run: |
+          docker run -d --name test-app -p 8080:8080 test-spring-app
+          sleep 5
+          docker logs test-app

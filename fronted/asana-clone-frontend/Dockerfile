@@ -20,6 +20,7 @@ COPY . .
 # **¡Asegúrate de que VITE_API_URL en tu .env apunta a la URL de producción de tu backend!**
 # Si lo estás desplegando, el valor debería ser algo como:
 # VITE_API_URL=/api (para usar el proxy de Render/Railway) o la URL pública. <-- LÍNEA CORREGIDA
+ENV VITE_API_URL=/api
 RUN npm run build
 
 # ----------------------------------------------------

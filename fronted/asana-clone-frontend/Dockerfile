@@ -19,7 +19,7 @@ COPY . .
 # Compila la aplicación. Vite genera los archivos estáticos en la carpeta 'dist'.
 # **¡Asegúrate de que VITE_API_URL en tu .env apunta a la URL de producción de tu backend!**
 # Si lo estás desplegando, el valor debería ser algo como:
-VITE_API_URL=/api (para usar el proxy de Render/Railway) o la URL pública.
+# VITE_API_URL=/api (para usar el proxy de Render/Railway) o la URL pública. <-- LÍNEA CORREGIDA
 RUN npm run build
 
 # ----------------------------------------------------

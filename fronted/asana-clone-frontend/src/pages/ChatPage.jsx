@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 // URL base de la API
-const API_URL = 'http://localhost:8080/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const ChatPage = () => {
   const [conversations, setConversations] = useState([]);

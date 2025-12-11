@@ -64,7 +64,9 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
             LocalDateTime startDate,
             LocalDateTime endDate
     );
-
+@Modifying
+    @Query("DELETE FROM ActivityLog a WHERE a.project.id = :projectId")
+    int deleteByProjectId(@Param("projectId") Long projectId);
     /**
      * N°7: Cuenta actividades de un proyecto
      */

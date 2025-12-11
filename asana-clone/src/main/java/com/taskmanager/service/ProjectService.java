@@ -618,47 +618,52 @@ public class ProjectService {
 
         log.info("Project unarchived successfully with ID: {}", id);
     }
-    @Transactional
-    public void deleteProject(Long id, Long userId) {
-        log.info("Starting deletion process for project ID: {} by user ID: {}", id, userId);
+   // ========== MÉTODO CORREGIDO PARA ProjectService.java ==========
 
-        Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Proyecto no encontrado con ID: " + id
-                ));
+/**
+ * 🔥 MÉTODO CORREGIDO: Elimina proyecto con todas sus dependencias
+ */
+@Transactional
+public void deleteProject(Long id, Long userId) {
+    log.info("Starting deletion process for project ID: {} by user ID: {}", id, userId);
 
-        // 1. Verificar Permisos
-        if (!project.getCreatedBy().getId().equals(userId)) {
-            throw new AccessDeniedException("Solo el creador puede eliminar el proyecto");
-        }
+    Project project = projectRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    "Proyecto no encontrado con ID: " + id
+            ));
 
-        // 2. 🔥 ELIMINAR DEPENDENCIAS ASOCIADAS (Solución al error 1451)
-
-        // a) Eliminar Tareas
-        taskRepository.deleteAllByProjectId(id);
-        log.debug("Deleted all tasks associated with project ID: {}", id);
-
-        // b) Eliminar Invitaciones (LA CAUSA DE TU ERROR 1451)
-        invitationRepository.deleteAllByProjectId(id);
-        log.debug("Deleted all pending invitations for project ID: {}", id);
-
-        // c) Opcional: Si tienes ProjectMemberRepository, descomenta esto:
-        // projectMemberRepository.deleteAllByProjectId(id);
-        // log.debug("Deleted all members associated with project ID: {}", id);
-
-        // 3. Eliminar el Proyecto Principal
-        projectRepository.delete(project);
-
-        // 4. 🔥 Actualizar contador de suscripción
-        // Solo decrementar si el proyecto NO estaba archivado
-        // (Si estaba archivado, el contador ya se decrementó en archiveProject)
-        if (!project.getArchived()) {
-            subscriptionService.updateProjectCount(userId, -1);
-        }
-
-        log.info("Project deleted successfully with ID: {}", id);
+    // 1. Verificar Permisos
+    if (!project.getCreatedBy().getId().equals(userId)) {
+        throw new AccessDeniedException("Solo el creador puede eliminar el proyecto");
     }
 
+    // 2. 🔥 ELIMINAR DEPENDENCIAS EN EL ORDEN CORRECTO
+
+    // a) Eliminar ActivityLogs (CRÍTICO - Causa del error 1451)
+    activityLogService.deleteAllByProjectId(id);
+    log.debug("Deleted all activity logs for project ID: {}", id);
+
+    // b) Eliminar Tareas
+    taskRepository.deleteAllByProjectId(id);
+    log.debug("Deleted all tasks associated with project ID: {}", id);
+
+    // c) Eliminar Invitaciones
+    invitationRepository.deleteAllByProjectId(id);
+    log.debug("Deleted all pending invitations for project ID: {}", id);
+
+    // d) Opcional: Eliminar Procesos (si no se eliminan en cascada)
+    // processRepository.deleteAllByProjectId(id);
+
+    // 3. Eliminar el Proyecto Principal
+    projectRepository.delete(project);
+
+    // 4. Actualizar contador de suscripción
+    if (!project.getArchived()) {
+        subscriptionService.updateProjectCount(userId, -1);
+    }
+
+    log.info("Project deleted successfully with ID: {}", id);
+}
 
     private void validateUserAccess(Project project, Long userId) {
         if (!hasUserAccess(project, userId)) {

@@ -1,38 +1,38 @@
 // ========== src/services/projectService.js (CORREGIDO) ==========
-
 import api from './api';
 
 const projectService = {
   
   getAllProjects: async () => {
-    const response = await api.get('/projects');
-    return response.data;
-  },
+    const response = await api.get('/projects');
+    return response.data;
+  },
 
-    // 🔥 Función agregada para que el frontend no falle:
-    getMyProjects: async () => {
-      // Reutiliza la función que ya existe
-      return projectService.getAllProjects();
-    },
+  // Función agregada para compatibilidad
+  getMyProjects: async () => {
+    return projectService.getAllProjects();
+  },
 
-  /**
-   * Obtener proyecto por ID
-   */
-  getProjectById: async (projectId) => {
-    const response = await api.get(`/projects/${projectId}`);
-    return response.data;
-  },
+  /**
+   * Obtener proyecto por ID
+   * ✅ CORREGIDO: Template literal con sintaxis correcta
+   */
+  getProjectById: async (projectId) => {
+    const response = await api.get(`/projects/${projectId}`);
+    return response.data;
+  },
 
-  /**
-   * Crear nuevo proyecto
-   */
-  createProject: async (projectData) => {
-    const response = await api.post('/projects', projectData);
-    return response.data;
-  },
+  /**
+   * Crear nuevo proyecto
+   */
+  createProject: async (projectData) => {
+    const response = await api.post('/projects', projectData);
+    return response.data;
+  },
 
   /**
    * Actualizar proyecto
+   * ✅ CORREGIDO: Template literal con sintaxis correcta
    */
   updateProject: async (projectId, projectData) => {
     const response = await api.put(`/projects/${projectId}`, projectData);
@@ -41,6 +41,7 @@ const projectService = {
 
   /**
    * Archivar proyecto
+   * ✅ CORREGIDO: Template literal con sintaxis correcta
    */
   archiveProject: async (projectId) => {
     const response = await api.put(`/projects/${projectId}/archive`);
@@ -48,7 +49,8 @@ const projectService = {
   },
 
   /**
-   * 🔥 Desarchivar proyecto
+   * Desarchivar proyecto
+   * ✅ CORREGIDO: Template literal con sintaxis correcta
    */
   unarchiveProject: async (projectId) => {
     const response = await api.put(`/projects/${projectId}/unarchive`);
@@ -57,6 +59,7 @@ const projectService = {
 
   /**
    * Eliminar proyecto
+   * ✅ CORREGIDO: Template literal con sintaxis correcta
    */
   deleteProject: async (projectId) => {
     const response = await api.delete(`/projects/${projectId}`);
@@ -65,6 +68,7 @@ const projectService = {
 
   /**
    * Agregar miembro al proyecto (método antiguo por ID)
+   * ✅ CORREGIDO: Template literal con sintaxis correcta
    */
   addMember: async (projectId, userId) => {
     const response = await api.post(`/projects/${projectId}/members/${userId}`);
@@ -73,6 +77,7 @@ const projectService = {
 
   /**
    * Remover miembro del proyecto
+   * ✅ CORREGIDO: Template literal con sintaxis correcta
    */
   removeMember: async (projectId, userId) => {
     const response = await api.delete(`/projects/${projectId}/members/${userId}`);
@@ -80,10 +85,9 @@ const projectService = {
   },
 
   /**
-   * 🔥 INVITAR MIEMBRO POR EMAIL (MÉTODO CORRECTO)
+   * INVITAR MIEMBRO POR EMAIL
    * POST /api/projects/{projectId}/invite
-   * @param {number} projectId
-   * @param {object} data - { invitedEmail: string }
+   * ✅ CORREGIDO: Template literal con sintaxis correcta
    */
   inviteMember: async (projectId, data) => {
     const response = await api.post(`/projects/${projectId}/invite`, data);
@@ -117,6 +121,14 @@ const projectService = {
     const response = await api.get('/projects/upcoming-deadlines', {
       params: { days },
     });
+    return response.data;
+  },
+
+  /**
+   * 🔥 NUEVO: Fetch para recalcular estado
+   */
+  fetchProjectById: async (projectId) => {
+    const response = await api.get(`/projects/${projectId}`);
     return response.data;
   },
 };

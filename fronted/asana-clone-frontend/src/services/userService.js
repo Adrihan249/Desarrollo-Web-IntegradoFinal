@@ -1,4 +1,4 @@
-// ========== src/services/userService.js ==========
+// ========== src/services/userService.js (CORREGIDO) ==========
 /**
  * Servicio de Usuarios (N°9 - Sprint 1)
  * - Listar usuarios
@@ -6,8 +6,8 @@
  * - Actualizar perfil
  * - Buscar usuarios
  * - Cambiar contraseña
+ * - Gestión de usuarios (Admin)
  */
-
 import api from './api';
 
 const userService = {
@@ -23,6 +23,7 @@ const userService = {
   /**
    * Obtener usuario por ID
    * GET /api/users/{id}
+   * ✅ CORREGIDO: Template literal
    */
   getUserById: async (userId) => {
     const response = await api.get(`/users/${userId}`);
@@ -43,6 +44,7 @@ const userService = {
   /**
    * Actualizar perfil de usuario
    * PUT /api/users/{id}
+   * ✅ CORREGIDO: Template literal
    */
   updateUser: async (userId, userData) => {
     const response = await api.put(`/users/${userId}`, userData);
@@ -52,6 +54,7 @@ const userService = {
   /**
    * Cambiar contraseña
    * POST /api/users/{id}/change-password
+   * ✅ CORREGIDO: Template literal
    */
   changePassword: async (userId, passwords) => {
     const response = await api.post(`/users/${userId}/change-password`, passwords);
@@ -61,9 +64,28 @@ const userService = {
   /**
    * Asignar roles (ADMIN)
    * PUT /api/users/{id}/roles
+   * ✅ CORREGIDO: Template literal
    */
   assignRoles: async (userId, roles) => {
     const response = await api.put(`/users/${userId}/roles`, roles);
+    return response.data;
+  },
+
+  /**
+   * 🔥 NUEVO: Desactivar usuario (ADMIN)
+   * DELETE /api/users/{id}
+   */
+  deleteUser: async (userId) => {
+    const response = await api.delete(`/users/${userId}`);
+    return response.data;
+  },
+
+  /**
+   * 🔥 NUEVO: Activar usuario (ADMIN)
+   * POST /api/users/{id}/activate
+   */
+  activateUser: async (userId) => {
+    const response = await api.post(`/users/${userId}/activate`);
     return response.data;
   },
 };

@@ -169,7 +169,14 @@ public class ActivityLogService {
                         .build())
                 .collect(Collectors.toList());
     }
-
+@Transactional
+public void deleteAllByProjectId(Long projectId) {
+    log.info("Deleting all activity logs for project ID: {}", projectId);
+    
+    int deletedCount = activityLogRepository.deleteByProjectId(projectId);
+    
+    log.info("Deleted {} activity logs for project ID: {}", deletedCount, projectId);
+}
     /**
      * N°7: Obtiene actividades de un usuario en un proyecto
      * Query Method sin SQL:

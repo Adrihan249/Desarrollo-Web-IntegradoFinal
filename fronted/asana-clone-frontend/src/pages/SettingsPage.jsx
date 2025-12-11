@@ -392,7 +392,308 @@ const AdminTab = () => {
 };
 
 // ===================================
-// COMPONENTE PRINCIPAL (sin cambios)
+// PESTAÑA: PERFIL
+// ===================================
+const ProfileTab = ({ user }) => {
+  const queryClient = useQueryClient();
+  const [formData, setFormData] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    bio: user?.bio || '',
+    phoneNumber: user?.phoneNumber || '',
+    avatarUrl: user?.avatarUrl || '',
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data) => userService.updateUser(user.id, data),
+    onSuccess: () => {
+      toast.success('✅ Perfil actualizado correctamente');
+      queryClient.invalidateQueries(['currentUser']);
+    },
+    onError: (error) => {
+      toast.error('❌ Error al actualizar perfil');
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    updateMutation.mutate(formData);
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Avatar */}
+      <div className="flex items-center gap-6">
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold">
+          {user?.firstName?.[0]}{user?.lastName?.[0]}
+        </div>
+        <div className="flex-1">
+          <Input
+            label="URL del Avatar"
+            name="avatarUrl"
+            value={formData.avatarUrl}
+            onChange={handleChange}
+            placeholder="https://ejemplo.com/avatar.jpg"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Puedes usar Gravatar, Imgur o cualquier URL de imagen pública
+          </p>
+        </div>
+      </div>
+
+      {/* Nombre y Apellido */}
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          label="Nombre"
+          name="firstName"
+          value={formData.firstName}
+          onChange={handleChange}
+          required
+        />
+        <Input
+          label="Apellido"
+          name="lastName"
+          value={formData.lastName}
+          onChange={handleChange}
+          required
+        />
+      </div>
+
+      {/* Email (readonly) */}
+      <Input
+        label="Email"
+        value={user?.email}
+        disabled
+        className="bg-gray-100"
+      />
+
+      {/* Teléfono */}
+      <Input
+        label="Teléfono"
+        name="phoneNumber"
+        value={formData.phoneNumber}
+        onChange={handleChange}
+        placeholder="+51 999 999 999"
+      />
+
+      {/* Bio */}
+      <Textarea
+        label="Biografía"
+        name="bio"
+        value={formData.bio}
+        onChange={handleChange}
+        rows={4}
+        placeholder="Cuéntanos un poco sobre ti..."
+        maxLength={500}
+      />
+      <p className="text-xs text-gray-500 -mt-3">{formData.bio.length}/500 caracteres</p>
+
+      {/* Cambiar Contraseña */}
+      <ChangePasswordForm userId={user?.id} />
+
+      {/* Botón Guardar */}
+      <Button
+        onClick={handleSubmit}
+        icon={Save}
+        disabled={updateMutation.isLoading}
+      >
+        {updateMutation.isLoading ? 'Guardando...' : 'Guardar Cambios'}
+      </Button>
+    </div>
+  );
+};
+
+// ===================================
+// FORMULARIO: CAMBIAR CONTRASEÑA
+// ===================================
+const ChangePasswordForm = ({ userId }) => {
+  const [passwords, setPasswords] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showForm, setShowForm] = useState(false);
+
+  const passwordMutation = useMutation({
+    mutationFn: (data) => userService.changePassword(userId, data),
+    onSuccess: () => {
+      toast.success('✅ Contraseña cambiada correctamente');
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setShowForm(false);
+    },
+    onError: (error) => {
+      toast.error('❌ Contraseña actual incorrecta');
+    },
+  });
+
+  const handleSubmit = () => {
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      toast.error('❌ Las contraseñas no coinciden');
+      return;
+    }
+    if (passwords.newPassword.length < 8) {
+      toast.error('❌ La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+    passwordMutation.mutate({
+      currentPassword: passwords.currentPassword,
+      newPassword: passwords.newPassword,
+    });
+  };
+
+  if (!showForm) {
+    return (
+      <Button
+        icon={Lock}
+        variant="secondary"
+        onClick={() => setShowForm(true)}
+      >
+        Cambiar Contraseña
+      </Button>
+    );
+  }
+
+  return (
+    <Card className="border-2 border-blue-100 bg-blue-50">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <Lock className="w-5 h-5" />
+          Cambiar Contraseña
+        </h3>
+        <button onClick={() => setShowForm(false)} className="text-gray-500 hover:text-gray-700">
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <Input
+          label="Contraseña Actual"
+          type="password"
+          value={passwords.currentPassword}
+          onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
+          required
+        />
+        <Input
+          label="Nueva Contraseña"
+          type="password"
+          value={passwords.newPassword}
+          onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+          required
+        />
+        <Input
+          label="Confirmar Nueva Contraseña"
+          type="password"
+          value={passwords.confirmPassword}
+          onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
+          required
+        />
+
+        <Button
+          onClick={handleSubmit}
+          icon={Lock}
+          disabled={passwordMutation.isLoading}
+        >
+          {passwordMutation.isLoading ? 'Cambiando...' : 'Cambiar Contraseña'}
+        </Button>
+      </div>
+    </Card>
+  );
+};
+
+// ===================================
+// PESTAÑA: NOTIFICACIONES (ESTÁTICA)
+// ===================================
+const NotificationsTab = () => {
+  const [settings, setSettings] = useState({
+    emailNotifications: true,
+    taskAssignments: true,
+    projectUpdates: true,
+    comments: false,
+    deadlines: true,
+    weeklyDigest: false,
+  });
+
+  const handleToggle = (key) => {
+    setSettings({ ...settings, [key]: !settings[key] });
+    toast.success('✅ Configuración actualizada');
+  };
+
+  const NotificationToggle = ({ label, description, enabled, onToggle }) => (
+    <div className="flex items-center justify-between py-3 border-b border-gray-200 last:border-0">
+      <div>
+        <p className="font-medium text-gray-900">{label}</p>
+        <p className="text-sm text-gray-500">{description}</p>
+      </div>
+      <button
+        onClick={onToggle}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+          enabled ? 'bg-blue-600' : 'bg-gray-300'
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            enabled ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <Bell className="w-5 h-5" />
+        Preferencias de Notificaciones
+      </h3>
+
+      <Card>
+        <NotificationToggle
+          label="Notificaciones por Email"
+          description="Recibir notificaciones en tu correo electrónico"
+          enabled={settings.emailNotifications}
+          onToggle={() => handleToggle('emailNotifications')}
+        />
+        <NotificationToggle
+          label="Asignación de Tareas"
+          description="Notificar cuando te asignen una tarea"
+          enabled={settings.taskAssignments}
+          onToggle={() => handleToggle('taskAssignments')}
+        />
+        <NotificationToggle
+          label="Actualizaciones de Proyecto"
+          description="Cambios importantes en tus proyectos"
+          enabled={settings.projectUpdates}
+          onToggle={() => handleToggle('projectUpdates')}
+        />
+        <NotificationToggle
+          label="Comentarios"
+          description="Notificar cuando alguien comente en tus tareas"
+          enabled={settings.comments}
+          onToggle={() => handleToggle('comments')}
+        />
+        <NotificationToggle
+          label="Recordatorios de Fechas Límite"
+          description="Alertas 24 horas antes del vencimiento"
+          enabled={settings.deadlines}
+          onToggle={() => handleToggle('deadlines')}
+        />
+        <NotificationToggle
+          label="Resumen Semanal"
+          description="Recibir un resumen de actividad cada semana"
+          enabled={settings.weeklyDigest}
+          onToggle={() => handleToggle('weeklyDigest')}
+        />
+      </Card>
+    </div>
+  );
+};
+
+// ===================================
+// COMPONENTE PRINCIPAL
 // ===================================
 const SettingsPage = () => {
   const { user } = useAuth();
@@ -410,6 +711,7 @@ const SettingsPage = () => {
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">⚙️ Configuración</h1>
 
+      {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b border-gray-200">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -430,7 +732,10 @@ const SettingsPage = () => {
         })}
       </div>
 
+      {/* Content */}
       <Card>
+        {activeTab === 'profile' && <ProfileTab user={user} />}
+        {activeTab === 'notifications' && <NotificationsTab />}
         {activeTab === 'admin' && isAdmin && <AdminTab />}
       </Card>
     </div>
